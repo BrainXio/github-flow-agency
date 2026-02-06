@@ -1,0 +1,57 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write        # Required for creating releases and tags
+  issues: write         # For adding comments if needed
+  pull-requests: write  # Optional
+
+jobs:
+  release:
+    name: Semantic Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # Full history needed for commit analysis
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'      # Stable LTS, semantic-release runs fine here
+
+      - name: Install semantic-release and plugins
+        run: |
+          npm install --global \
+            semantic-release \
+            @semantic-release/commit-analyzer \
+            @semantic-release/release-notes-generator \
+            @semantic-release/changelog \
+            @semantic-release/github \
+            @semantic-release/git
+
+      - name: Run semantic-release
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # Optional: branch config if you want to customize
+          branch: main
+          # Extra plugins if you want more (e.g. changelog file commit)
+          extra_plugins: |
+            @semantic-release/changelog
+            @semantic-release/git
+          # Change this to true for testing without actual release
+          dry_run: false
+
+      - name: Output release info (for debugging)
+        if: always()
+        run: |
+          echo "New version: ${{ steps.semantic.outputs.new-release-version }}"
+          echo "Published: ${{ steps.semantic.outputs.new-release-published }}"

@@ -130,8 +130,8 @@ The default `make test` runs a matrix that covers every `job-type` in `agency-co
 - [x] ESM + `@actions/core@3.0.0` compatibility
 - [x] Comprehensive local matrix testing with `act`
 - [x] Clean Makefile + Node 20 setup guidance
-- [ ] Improve: skill-level, duration, short description outputs
-- [ ] GitHub issue & PR templates
+- [x] Improve: skill-level, duration, short description outputs
+- [x] GitHub issue & PR templates
 - [ ] Automated semantic-release workflow on main
 - [ ] Final README polish (badges, more examples)
 
