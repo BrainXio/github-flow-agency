@@ -1,0 +1,46 @@
+name: Test GitHub Flow Agency
+
+on:
+  workflow_dispatch:
+    inputs:
+      job-type:
+        description: 'Job type to test'
+        required: true
+        default: 'tests'
+      target-environment:
+        description: 'Target environment'
+        required: false
+        default: 'production'
+      has-interesting-changes:
+        description: 'Has interesting changes (true/false/unknown)'
+        required: false
+        default: 'true'
+
+jobs:
+  test-agency:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'  # optional but nice: caches node_modules if lockfile present
+
+      - name: Install dependencies
+        run: npm ci   # or npm install if you prefer; ci is faster/cleaner with lockfile
+
+      - name: Run GitHub Flow Agency action
+        id: agency
+        uses: ./
+        with:
+          job-type: ${{ inputs.job-type || 'tests' }}
+          target-environment: ${{ inputs.target-environment || 'production' }}
+          has-interesting-changes: ${{ inputs.has-interesting-changes || 'true' }}
+
+      - name: Show generated outputs
+        run: |
+          echo "Generated Job Title : ${{ steps.agency.outputs.job-title }}"
+          echo "Status              : ${{ steps.agency.outputs.status }}"
