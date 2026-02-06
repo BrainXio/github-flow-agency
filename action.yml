@@ -1,0 +1,30 @@
+name: 'GitHub Flow Agency'
+description: 'Generates dynamic, realistic job titles for AI agents in GitHub Flow pipelines based on router context'
+author: 'brainxio'
+
+branding:
+  icon: 'cpu'
+  color: 'blue'
+
+inputs:
+  job-type:
+    description: 'Required. Role family (e.g., "tests", "deploy", "ai-review", "docs", "release-tasks", "nightly-tasks")'
+    required: true
+  target-environment:
+    description: 'Optional. Deployment environment context (e.g., "preview", "production", "tag-release", "nightly")'
+    required: false
+    default: 'unknown'
+  has-interesting-changes:
+    description: 'Optional. Whether the trigger event had meaningful code changes ("true", "false", or "unknown")'
+    required: false
+    default: 'unknown'
+
+outputs:
+  job-title:
+    description: 'The generated, human-readable job title with appropriate modifiers (e.g. "Software Test Engineer (Production) – Change Driven")'
+  status:
+    description: '"success" if title was generated, "error" if something failed (e.g. invalid job-type with no fallback)'
+
+runs:
+  using: 'node20'
+  main: 'index.js'
