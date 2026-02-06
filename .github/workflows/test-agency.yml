@@ -1,24 +1,37 @@
 name: Test GitHub Flow Agency
 
 on:
+  push:
+    branches: [main]
+  pull_request:
   workflow_dispatch:
-    inputs:
-      job-type:
-        description: 'Job type to test'
-        required: true
-        default: 'tests'
-      target-environment:
-        description: 'Target environment'
-        required: false
-        default: 'production'
-      has-interesting-changes:
-        description: 'Has interesting changes (true/false/unknown)'
-        required: false
-        default: 'true'
 
 jobs:
-  test-agency:
+  test-all-job-types:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        job-type:
+          - tests
+          - deploy
+          - ai-review
+          - docs
+          - release-tasks
+          - nightly-tasks
+        # You can add more combinations later
+        include:
+          - job-type: unknown-job-type   # should fallback to default
+            expect-fallback: true
+          - job-type: tests
+            target-environment: preview
+            has-changes: false
+          - job-type: deploy
+            target-environment: production
+            has-changes: true
+          - job-type: docs
+            target-environment: unknown
+            has-changes: unknown
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -27,20 +40,36 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'  # optional but nice: caches node_modules if lockfile present
+          cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci   # or npm install if you prefer; ci is faster/cleaner with lockfile
+        run: npm ci
 
-      - name: Run GitHub Flow Agency action
+      - name: Run Agency Action
         id: agency
         uses: ./
         with:
-          job-type: ${{ inputs.job-type || 'tests' }}
-          target-environment: ${{ inputs.target-environment || 'production' }}
-          has-interesting-changes: ${{ inputs.has-interesting-changes || 'true' }}
+          job-type: ${{ matrix.job-type }}
+          target-environment: ${{ matrix.target-environment || 'production' }}
+          has-interesting-changes: ${{ matrix.has-changes || 'unknown' }}
 
-      - name: Show generated outputs
+      - name: Show result
         run: |
-          echo "Generated Job Title : ${{ steps.agency.outputs.job-title }}"
-          echo "Status              : ${{ steps.agency.outputs.status }}"
+          echo "Job Type              : ${{ matrix.job-type }}"
+          echo "Target Env            : ${{ matrix.target-environment || 'production' }}"
+          echo "Has Changes           : ${{ matrix.has-changes || 'unknown' }}"
+          echo "Generated Title       : ${{ steps.agency.outputs.job-title }}"
+          echo "Status                : ${{ steps.agency.outputs.status }}"
+          if [[ "${{ steps.agency.outputs.status }}" != "success" ]]; then
+            echo "::error::Action failed for job-type ${{ matrix.job-type }}"
+            exit 1
+          fi
+
+      - name: Validate fallback (when applicable)
+        if: matrix.expect-fallback == 'true'
+        run: |
+          title="${{ steps.agency.outputs.job-title }}"
+          if [[ ! "$title" =~ ^AI\ Agent ]]; then
+            echo "::error::Expected fallback to 'AI Agent' but got: $title"
+            exit 1
+          fi
