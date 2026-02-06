@@ -1,19 +1,20 @@
 name: Release
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - main
 
-permissions:
-  contents: write
-  issues: write
-  pull-requests: write
-
 jobs:
-  release:
-    name: Semantic Release
+  preview:
+    name: Semantic Release Preview (Dry-Run)
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read  # Read-only for dry-run
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,11 +24,46 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'   # caches node_modules for faster runs
+          node-version: '22'  # CI-only for v25 compatibility
+          cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci      # ← installs both deps and devDeps reproducibly
+        run: npm ci
+
+      - name: Run semantic-release dry-run
+        uses: cycjimmy/semantic-release-action@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          extra_plugins: |
+            @semantic-release/changelog
+            @semantic-release/git
+          dry_run: true
+          ci: false
+          unset_gha_env: true
+
+  release:
+    name: Semantic Release
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'  # CI-only for v25 compatibility
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Run semantic-release
         uses: cycjimmy/semantic-release-action@v6
