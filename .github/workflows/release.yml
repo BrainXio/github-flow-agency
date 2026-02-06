@@ -6,9 +6,9 @@ on:
       - main
 
 permissions:
-  contents: write        # Required for creating releases and tags
-  issues: write         # For adding comments if needed
-  pull-requests: write  # Optional
+  contents: write
+  issues: write
+  pull-requests: write
 
 jobs:
   release:
@@ -18,26 +18,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0          # Full history needed for commit analysis
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'      # Stable LTS, semantic-release runs fine here
+          node-version: '20'
+          cache: 'npm'   # caches node_modules for faster runs
 
-      - name: Install semantic-release and plugins
-        run: |
-          npm install --global \
-            semantic-release \
-            @semantic-release/commit-analyzer \
-            @semantic-release/release-notes-generator \
-            @semantic-release/changelog \
-            @semantic-release/github \
-            @semantic-release/git \
-            conventional-changelog-conventionalcommits
+      - name: Install dependencies
+        run: npm ci      # ← installs both deps and devDeps reproducibly
 
       - name: Run semantic-release
-        id: semantic
         uses: cycjimmy/semantic-release-action@v6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -48,7 +40,7 @@ jobs:
             @semantic-release/git
           dry_run: false
 
-      - name: Output release info (for debugging)
+      - name: Output release info
         if: always()
         run: |
           echo "New version: ${{ steps.semantic.outputs.new-release-version }}"
