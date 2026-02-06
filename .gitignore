@@ -1,0 +1,33 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json    # optional: keep if you want reproducible installs, remove if you prefer not
+
+# Build / temp
+dist/
+build/
+*.log
+
+# Act / local testing
+bin/
+act_*
+.nektos/
+
+# Editors & OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.sublime-*
+*.swp
+*.swo
+
+# Env / secrets
+.env
+.env.local
+.env.*.local
+
+# Misc
+coverage/
