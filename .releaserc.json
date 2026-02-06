@@ -1,0 +1,22 @@
+{
+  "branches": ["main"],
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    "@semantic-release/changelog",
+    "@semantic-release/npm",
+    "@semantic-release/github",
+    "@semantic-release/git"
+  ],
+  "preset": "conventionalcommits",
+  "tagFormat": "v${version}",
+  "releaseNotesFile": "CHANGELOG.md",
+  "changelogFile": "CHANGELOG.md",
+  "npmPublish": false,
+  "github": {
+    "release": true
+  },
+  "git": {
+    "assets": ["CHANGELOG.md", "package.json"]
+  }
+}

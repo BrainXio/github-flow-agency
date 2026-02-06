@@ -1,0 +1,77 @@
+name: Test GitHub Flow Agency
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test-all-job-types:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        job-type:
+          - tests
+          - deploy
+          - ai-review
+          - docs
+          - release-tasks
+          - nightly-tasks
+        include:
+          - job-type: unknown-job-type
+            expect-fallback: true
+          - job-type: tests
+            target-environment: preview
+            has-changes: false
+          - job-type: deploy
+            target-environment: production
+            has-changes: true
+          - job-type: docs
+            target-environment: unknown
+            has-changes: unknown
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Agency Action
+        id: agency
+        uses: ./
+        with:
+          job-type: ${{ matrix.job-type }}
+          target-environment: ${{ matrix.target-environment || 'production' }}
+          has-interesting-changes: ${{ matrix.has-changes || 'unknown' }}
+
+      - name: Show result
+        run: |
+          echo "Job Type               : ${{ matrix.job-type }}"
+          echo "Target Env             : ${{ matrix.target-environment || 'production' }}"
+          echo "Has Changes            : ${{ matrix.has-changes || 'unknown' }}"
+          echo "Generated Title        : ${{ steps.agency.outputs.job-title }}"
+          echo "Skill Level            : ${{ steps.agency.outputs.skill-level }}"
+          echo "Duration Estimate      : ${{ steps.agency.outputs.duration-estimate }}"
+          echo "Short Description      : ${{ steps.agency.outputs.short-description }}"
+          echo "Status                 : ${{ steps.agency.outputs.status }}"
+          if [[ "${{ steps.agency.outputs.status }}" != "success" ]]; then
+            echo "::error::Action failed for job-type ${{ matrix.job-type }}"
+            exit 1
+          fi
+
+      - name: Validate fallback (when applicable)
+        if: matrix.expect-fallback == 'true'
+        run: |
+          title="${{ steps.agency.outputs.job-title }}"
+          if [[ ! "$title" =~ ^AI\ Agent ]]; then
+            echo "::error::Expected fallback to 'AI Agent' but got: $title"
+            exit 1
+          fi

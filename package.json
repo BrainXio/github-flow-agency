@@ -1,0 +1,19 @@
+{
+  "name": "github-flow-agency",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GitHub Action: generates dynamic AI agent job titles based on router context",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "lint": "echo 'Linting not configured yet — add eslint when ready'"
+  },
+  "dependencies": {
+    "@actions/core": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "author": "brainxio",
+  "license": "UNLICENSED"
+}
