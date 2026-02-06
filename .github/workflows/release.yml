@@ -1,43 +1,71 @@
 name: Release
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - main
 
-permissions:
-  contents: write        # Required for creating releases and tags
-  issues: write         # For adding comments if needed
-  pull-requests: write  # Optional
-
 jobs:
-  release:
-    name: Semantic Release
+  preview:
+    name: Semantic Release Preview (Dry-Run)
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read  # Read-only for dry-run
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0          # Full history needed for commit analysis
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'      # Stable LTS, semantic-release runs fine here
+          node-version: '22'  # CI-only for v25 compatibility
+          cache: 'npm'
 
-      - name: Install semantic-release and plugins
-        run: |
-          npm install --global \
-            semantic-release \
-            @semantic-release/commit-analyzer \
-            @semantic-release/release-notes-generator \
-            @semantic-release/changelog \
-            @semantic-release/github \
-            @semantic-release/git \
-            conventional-changelog-conventionalcommits
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run semantic-release dry-run
+        uses: cycjimmy/semantic-release-action@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          extra_plugins: |
+            @semantic-release/changelog
+            @semantic-release/git
+          dry_run: true
+          ci: false
+          unset_gha_env: true
+
+  release:
+    name: Semantic Release
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'  # CI-only for v25 compatibility
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Run semantic-release
-        id: semantic
         uses: cycjimmy/semantic-release-action@v6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -48,7 +76,7 @@ jobs:
             @semantic-release/git
           dry_run: false
 
-      - name: Output release info (for debugging)
+      - name: Output release info
         if: always()
         run: |
           echo "New version: ${{ steps.semantic.outputs.new-release-version }}"
