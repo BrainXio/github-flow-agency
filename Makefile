@@ -38,7 +38,11 @@ setup: ## Install act, shellcheck (if missing), and npm dependencies
 	fi
 	@if [ -f package.json ]; then \
 		echo "Running npm install..."; \
-		npm ci || npm install; \
+		if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then \
+			npm ci; \
+		else \
+			npm install; \
+		fi; \
 	else \
 		echo "No package.json found yet — skipping npm install"; \
 	fi
