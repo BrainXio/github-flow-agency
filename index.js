@@ -4,64 +4,90 @@ import path from 'path';
 
 async function run() {
   try {
-    // Determine workspace (repo root in Actions)
     const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
-
-    // Load config or fall back to defaults
     let config = {};
-    const configPath = path.join(workspace, 'agency-config.json');
 
-    if (fs.existsSync(configPath)) {
+    // 1. Try to load from the calling repo (user's project)
+    const userConfigPath = path.join(workspace, 'agency-config.json');
+    if (fs.existsSync(userConfigPath)) {
       try {
-        const configContent = fs.readFileSync(configPath, 'utf8');
+        const configContent = fs.readFileSync(userConfigPath, 'utf8');
         config = JSON.parse(configContent);
-        core.info('Loaded agency-config.json successfully');
+        core.info('Loaded agency-config.json from repository root');
       } catch (parseErr) {
-        core.warning(`Failed to parse agency-config.json: ${parseErr.message}. Using defaults.`);
+        core.warning(`Failed to parse repository agency-config.json: ${parseErr.message}. Falling back to bundled defaults.`);
       }
     } else {
-      core.info('agency-config.json not found in repo root. Using hardcoded defaults.');
+      // 2. No user config → load the bundled one from the action itself
+      const bundledConfigPath = path.join(__dirname, 'agency-config.json');
+      if (fs.existsSync(bundledConfigPath)) {
+        const bundledContent = fs.readFileSync(bundledConfigPath, 'utf8');
+        config = JSON.parse(bundledContent);
+        core.info('No agency-config.json in repository. Using bundled defaults from the action.');
+      } else {
+        // This should never happen in a tagged release, but safe fallback
+        core.warning('Bundled agency-config.json not found. Using minimal fallback defaults.');
+        config = {
+          defaults: {
+            titleBase: "AI Agent",
+            skillLevel: "Mid",
+            durationEstimate: "5-15 minutes",
+            shortDescription: "General-purpose AI agent handling standard tasks."
+          },
+          jobTypes: {}
+        };
+      }
     }
 
-    const defaults = config.defaults || { titleBase: 'AI Agent' };
+    const defaults = config.defaults || {
+      titleBase: "AI Agent",
+      skillLevel: "Mid",
+      durationEstimate: "5-15 minutes",
+      shortDescription: "General-purpose AI agent handling standard tasks."
+    };
+
     const jobTypes = config.jobTypes || {};
 
-    // Get inputs (required/optional with defaults)
     const jobType = core.getInput('job-type', { required: true }).trim();
     const targetEnvironment = core.getInput('target-environment').trim() || 'unknown';
     const hasInterestingChanges = core.getInput('has-interesting-changes').trim() || 'unknown';
 
-    // Resolve title base
-    let titleBase = defaults.titleBase;
-    if (jobTypes[jobType] && jobTypes[jobType].titleBase) {
-      titleBase = jobTypes[jobType].titleBase;
-    } else if (jobType !== '') {
-      core.warning(`Job type "${jobType}" not found in config. Using default title base.`);
+    const jobConfig = jobTypes[jobType] || {};
+    let titleBase        = jobConfig.titleBase        ?? defaults.titleBase;
+    let skillLevel       = jobConfig.skillLevel       ?? defaults.skillLevel;
+    let durationEstimate = jobConfig.durationEstimate ?? defaults.durationEstimate;
+    let shortDescription = jobConfig.shortDescription ?? defaults.shortDescription;
+
+    if (!jobTypes[jobType] && jobType !== '') {
+      core.warning(`Job type "${jobType}" not found in config. Using defaults.`);
     }
 
-    // Build modifiers
+    // Build title modifiers
     const modifiers = [];
-
     if (targetEnvironment !== 'unknown' && targetEnvironment !== '') {
       const capitalizedEnv = targetEnvironment.charAt(0).toUpperCase() + targetEnvironment.slice(1).toLowerCase();
       modifiers.push(`(${capitalizedEnv})`);
     }
-
     if (hasInterestingChanges === 'true') {
       modifiers.push('Change-Driven');
     } else if (hasInterestingChanges === 'false') {
       modifiers.push('Stable');
     }
-    // 'unknown' → no modifier (intentional – keeps title clean)
 
-    // Construct final title
     const jobTitle = [titleBase, ...modifiers].join(' ').trim();
 
     // Set outputs
     core.setOutput('job-title', jobTitle);
+    core.setOutput('skill-level', skillLevel);
+    core.setOutput('duration-estimate', durationEstimate);
+    core.setOutput('short-description', shortDescription);
     core.setOutput('status', 'success');
 
-    core.info(`Generated job title: ${jobTitle}`);
+    core.info(`Generated job title:        ${jobTitle}`);
+    core.info(`Skill level:               ${skillLevel}`);
+    core.info(`Estimated duration:        ${durationEstimate}`);
+    core.info(`Short description:         ${shortDescription}`);
+
   } catch (error) {
     core.setOutput('status', 'error');
     core.setFailed(`Action failed: ${error.message}`);

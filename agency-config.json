@@ -1,25 +1,46 @@
 {
   "defaults": {
-    "titleBase": "AI Agent"
+    "titleBase": "AI Agent",
+    "skillLevel": "Mid",
+    "durationEstimate": "5-15 minutes",
+    "shortDescription": "General-purpose AI agent handling standard tasks."
   },
   "jobTypes": {
     "tests": {
-      "titleBase": "Software Test Engineer"
+      "titleBase": "Software Test Engineer",
+      "skillLevel": "Mid",
+      "durationEstimate": "3-10 minutes",
+      "shortDescription": "Runs automated tests and validates behavior after changes."
     },
     "deploy": {
-      "titleBase": "Site Reliability Engineer"
+      "titleBase": "Site Reliability Engineer",
+      "skillLevel": "Senior",
+      "durationEstimate": "2-8 minutes",
+      "shortDescription": "Deploys updates safely to production or preview with rollback readiness."
     },
     "ai-review": {
-      "titleBase": "Code Review Specialist"
+      "titleBase": "Code Review Specialist",
+      "skillLevel": "Senior",
+      "durationEstimate": "5-20 minutes",
+      "shortDescription": "Performs deep, context-aware code reviews with security and best-practice focus."
     },
     "docs": {
-      "titleBase": "Technical Documentation Engineer"
+      "titleBase": "Technical Documentation Engineer",
+      "skillLevel": "Mid",
+      "durationEstimate": "10-30 minutes",
+      "shortDescription": "Updates and improves user-facing and developer documentation."
     },
     "release-tasks": {
-      "titleBase": "Release Orchestration Engineer"
+      "titleBase": "Release Orchestration Engineer",
+      "skillLevel": "Lead",
+      "durationEstimate": "5-15 minutes",
+      "shortDescription": "Coordinates release process, changelog generation, tagging, and announcements."
     },
     "nightly-tasks": {
-      "titleBase": "Repository Maintenance Engineer"
+      "titleBase": "Repository Maintenance Engineer",
+      "skillLevel": "Mid",
+      "durationEstimate": "3-10 minutes",
+      "shortDescription": "Performs routine repo health checks, dependency updates, and cleanup."
     }
   }
 }

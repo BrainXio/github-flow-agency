@@ -18,9 +18,8 @@ jobs:
           - docs
           - release-tasks
           - nightly-tasks
-        # You can add more combinations later
         include:
-          - job-type: unknown-job-type   # should fallback to default
+          - job-type: unknown-job-type
             expect-fallback: true
           - job-type: tests
             target-environment: preview
@@ -55,11 +54,14 @@ jobs:
 
       - name: Show result
         run: |
-          echo "Job Type              : ${{ matrix.job-type }}"
-          echo "Target Env            : ${{ matrix.target-environment || 'production' }}"
-          echo "Has Changes           : ${{ matrix.has-changes || 'unknown' }}"
-          echo "Generated Title       : ${{ steps.agency.outputs.job-title }}"
-          echo "Status                : ${{ steps.agency.outputs.status }}"
+          echo "Job Type               : ${{ matrix.job-type }}"
+          echo "Target Env             : ${{ matrix.target-environment || 'production' }}"
+          echo "Has Changes            : ${{ matrix.has-changes || 'unknown' }}"
+          echo "Generated Title        : ${{ steps.agency.outputs.job-title }}"
+          echo "Skill Level            : ${{ steps.agency.outputs.skill-level }}"
+          echo "Duration Estimate      : ${{ steps.agency.outputs.duration-estimate }}"
+          echo "Short Description      : ${{ steps.agency.outputs.short-description }}"
+          echo "Status                 : ${{ steps.agency.outputs.status }}"
           if [[ "${{ steps.agency.outputs.status }}" != "success" ]]; then
             echo "::error::Action failed for job-type ${{ matrix.job-type }}"
             exit 1

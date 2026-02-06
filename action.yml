@@ -1,5 +1,5 @@
 name: 'GitHub Flow Agency'
-description: 'Generates dynamic, realistic job titles for AI agents in GitHub Flow pipelines based on router context'
+description: 'Generates dynamic AI agent job titles, skill levels, duration estimates and short descriptions based on router inputs'
 author: 'brainxio'
 
 branding:
@@ -21,9 +21,15 @@ inputs:
 
 outputs:
   job-title:
-    description: 'The generated, human-readable job title with appropriate modifiers (e.g. "Software Test Engineer (Production) – Change Driven")'
+    description: 'The generated, human-readable job title with appropriate modifiers'
+  skill-level:
+    description: 'Estimated skill level required for the role (Junior / Mid / Senior / Lead)'
+  duration-estimate:
+    description: 'Rough time estimate to complete the task (e.g. "2-4 hours", "1-2 days")'
+  short-description:
+    description: '1-2 sentence summary of the agent responsibilities'
   status:
-    description: '"success" if title was generated, "error" if something failed (e.g. invalid job-type with no fallback)'
+    description: '"success" if outputs were generated, "error" if something failed'
 
 runs:
   using: 'node20'
