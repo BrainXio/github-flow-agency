@@ -33,7 +33,8 @@ jobs:
             @semantic-release/release-notes-generator \
             @semantic-release/changelog \
             @semantic-release/github \
-            @semantic-release/git
+            @semantic-release/git \
+            conventional-changelog-conventionalcommits
 
       - name: Run semantic-release
         id: semantic
@@ -41,13 +42,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          # Optional: branch config if you want to customize
           branch: main
-          # Extra plugins if you want more (e.g. changelog file commit)
           extra_plugins: |
             @semantic-release/changelog
             @semantic-release/git
-          # Change this to true for testing without actual release
           dry_run: false
 
       - name: Output release info (for debugging)
