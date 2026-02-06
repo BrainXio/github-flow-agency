@@ -1,0 +1,25 @@
+{
+  "defaults": {
+    "titleBase": "AI Agent"
+  },
+  "jobTypes": {
+    "tests": {
+      "titleBase": "Software Test Engineer"
+    },
+    "deploy": {
+      "titleBase": "Site Reliability Engineer"
+    },
+    "ai-review": {
+      "titleBase": "Code Review Specialist"
+    },
+    "docs": {
+      "titleBase": "Technical Documentation Engineer"
+    },
+    "release-tasks": {
+      "titleBase": "Release Orchestration Engineer"
+    },
+    "nightly-tasks": {
+      "titleBase": "Repository Maintenance Engineer"
+    }
+  }
+}
